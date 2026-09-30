@@ -3,6 +3,7 @@ import {
   type Milestone,
   type RoadmapItem,
   buildRoadmap,
+  isBlank,
   health,
   isValidDate,
   nextStatus,
@@ -86,5 +87,23 @@ describe('validation and parsing', () => {
       JSON.stringify({ milestones: [m1, { id: 'bad', title: 'x', target: 'soon' }], items: [item('a', 'm1', 'done'), item('b', 'bad', 'done'), { ...item('c', 'm1', 'done'), status: 'blocked' }] }),
     );
     expect(parsed).toEqual({ milestones: [m1], items: [item('a', 'm1', 'done')] });
+  });
+});
+
+describe('pass 3 edge cases', () => {
+  it('a milestone is not overdue before its target day ends, even on a 25-hour DST day', () => {
+    // 2026-10-25 is 25 hours long in Europe/Berlin; "+24h" would flag overdue at 23:00.
+    const m = { id: 'm', title: 'Launch', target: '2026-10-25' };
+    const lateEvening = new Date(2026, 9, 25, 23, 30).getTime();
+    expect(health(m, [{ id: 'i', title: 'x', milestoneId: 'm', status: 'in-progress' }], lateEvening)).not.toBe('overdue');
+    expect(health(m, [{ id: 'i', title: 'x', milestoneId: 'm', status: 'in-progress' }], new Date(2026, 9, 26).getTime())).toBe(
+      'overdue',
+    );
+  });
+  it('rejects titles made only of zero-width characters', () => {
+    expect(isBlank('\u200B\u200D')).toBe(true);
+    expect(isBlank('  \u2060 ')).toBe(true);
+    expect(isBlank('v2 🚀')).toBe(false);
+    expect(validateMilestone('\u200B', '2026-01-01')).toBe('Milestone title is required.');
   });
 });

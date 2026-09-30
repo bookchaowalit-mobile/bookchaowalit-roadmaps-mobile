@@ -31,3 +31,14 @@ Score: 6/10 (was 5/10) — items and milestones can be deleted, status buttons a
 - Component tests: `src/pages/__tests__/Home.test.tsx` (Vitest + jsdom + @testing-library/react) covers sample persistence, status cycling, adding an item through Ionic `ionInput`, and deletes. 15 tests total.
 - Advisories: `npm audit --omit=dev` is clean; dev-only vite 5/esbuild/vitest findings need major upgrades.
 - Verified: typecheck, lint, vitest, `npm run build`.
+
+## Done in this pass (pass 3)
+
+Score: 6.5/10 (was 6/10) — edge-case hunt in `src/lib/roadmap.ts`.
+
+- Bug: "end of target day" was `midnight + 24h`, so on a 25-hour DST day (e.g. 2026-10-25 in
+  Europe/Berlin) a milestone turned "overdue" at 23:00 on its own target date. Now uses next local midnight.
+- Bug: milestone and item titles made only of zero-width characters (U+200B/U+200D/U+2060) were accepted;
+  shared `isBlank()` now guards both forms.
+- Verified: typecheck, lint, vitest (UTC, Europe/Berlin, America/New_York, Asia/Bangkok), build;
+  the new tests fail on the previous code (under TZ=Europe/Berlin for the DST case).

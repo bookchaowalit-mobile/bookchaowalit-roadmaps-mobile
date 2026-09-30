@@ -29,6 +29,7 @@ import {
   parseRoadmap,
   removeItem,
   removeMilestone,
+  isBlank,
   validateMilestone,
 } from '../lib/roadmap';
 
@@ -86,7 +87,7 @@ const Home: React.FC = () => {
   };
 
   const addItem = () => {
-    if (!itemTitle.trim() || !itemMilestone) {
+    if (isBlank(itemTitle) || !itemMilestone) {
       setError('Item needs a title and a milestone.');
       return;
     }

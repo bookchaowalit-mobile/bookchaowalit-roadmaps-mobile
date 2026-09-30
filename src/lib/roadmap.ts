@@ -46,10 +46,17 @@ export function progress(items: RoadmapItem[]): Progress {
 }
 
 const DAY = 86_400_000;
-const parseDate = (ymd: string) => {
+/** Local midnight at the start of the day after `ymd` (DST-safe: not `+ 24h`). */
+const endOfDay = (ymd: string) => {
   const [y, m, d] = ymd.split('-').map(Number);
-  return new Date(y, m - 1, d).getTime();
+  return new Date(y, m - 1, d + 1).getTime();
 };
+
+/** Zero-width characters that `trim()` keeps but nobody can see. */
+const INVISIBLE = /[\u200B-\u200D\u2060\uFEFF]/g;
+
+/** True when a title has nothing visible in it (whitespace or zero-width only). */
+export const isBlank = (title: string): boolean => !title.replace(INVISIBLE, '').trim();
 
 /**
  * complete: every item done. overdue: target passed with work left.
@@ -58,7 +65,7 @@ const parseDate = (ymd: string) => {
 export function health(milestone: Milestone, items: RoadmapItem[], now: number): Health {
   const p = progress(items);
   if (p.total > 0 && p.done === p.total) return 'complete';
-  const target = parseDate(milestone.target) + DAY; // end of target day
+  const target = endOfDay(milestone.target);
   if (now >= target) return 'overdue';
   if (target - now <= 14 * DAY && p.ratio < 0.5) return 'at-risk';
   return 'on-track';
@@ -85,7 +92,7 @@ export function isValidDate(ymd: string): boolean {
 }
 
 export function validateMilestone(title: string, target: string): string | null {
-  if (!title.trim()) return 'Milestone title is required.';
+  if (isBlank(title)) return 'Milestone title is required.';
   if (!isValidDate(target)) return 'Target must be a real date (YYYY-MM-DD).';
   return null;
 }
