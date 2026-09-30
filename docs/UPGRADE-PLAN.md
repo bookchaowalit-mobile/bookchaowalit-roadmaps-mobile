@@ -7,8 +7,7 @@ progress and health, localStorage) with tested logic and honest CI.
 
 ## Backlog
 
-- P1: Edit/delete items and milestones; drag to reorder.
-- P1: Component tests (vitest + @testing-library/react + jsdom) for the Home page.
+- P1: Edit items and milestones; drag to reorder (delete done in pass 2).
 - P1: Code-split Ionic (bundle is ~1 MB; Vite warns about chunk size).
 - P2: Sync with the roadmaps backend / share a read-only public roadmap link.
 - P2: Explore tab: timeline view across milestones.
@@ -22,3 +21,13 @@ progress and health, localStorage) with tested logic and honest CI.
   health, ordering, strict date validation, defensive storage parsing) with 9 vitest tests.
 - `npm run lint` was broken (ESLint not installed); added ESLint 9 flat config.
 - CI runs `npm ci`, typecheck, lint, tests and build without `|| true`; lockfile committed.
+
+## Done in this pass (pass 2)
+
+Score: 6/10 (was 5/10) — items and milestones can be deleted, status buttons are keyboard-accessible, and the Home page has component tests.
+
+- Delete: per-item ✕ and "Delete milestone" (removes its items too) via pure `removeItem`/`removeMilestone` (tested). Edit and drag-to-reorder remain open (P1).
+- Accessibility: the status control was an `IonChip` with `role="button"` but no keyboard support; it is now an `IonButton` (focusable, Enter/Space) with the same label.
+- Component tests: `src/pages/__tests__/Home.test.tsx` (Vitest + jsdom + @testing-library/react) covers sample persistence, status cycling, adding an item through Ionic `ionInput`, and deletes. 15 tests total.
+- Advisories: `npm audit --omit=dev` is clean; dev-only vite 5/esbuild/vitest findings need major upgrades.
+- Verified: typecheck, lint, vitest, `npm run build`.

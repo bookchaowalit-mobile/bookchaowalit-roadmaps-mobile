@@ -115,3 +115,16 @@ export function parseRoadmap(json: string | null): RoadmapData | null {
     return null;
   }
 }
+
+/** Removes one item. */
+export function removeItem(data: RoadmapData, id: string): RoadmapData {
+  return { ...data, items: data.items.filter((i) => i.id !== id) };
+}
+
+/** Removes a milestone together with the items planned under it. */
+export function removeMilestone(data: RoadmapData, id: string): RoadmapData {
+  return {
+    milestones: data.milestones.filter((m) => m.id !== id),
+    items: data.items.filter((i) => i.milestoneId !== id),
+  };
+}

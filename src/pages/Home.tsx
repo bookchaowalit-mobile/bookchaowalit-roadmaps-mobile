@@ -5,7 +5,6 @@ import {
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
-  IonChip,
   IonContent,
   IonHeader,
   IonInput,
@@ -28,6 +27,8 @@ import {
   buildRoadmap,
   nextStatus,
   parseRoadmap,
+  removeItem,
+  removeMilestone,
   validateMilestone,
 } from '../lib/roadmap';
 
@@ -97,6 +98,11 @@ const Home: React.FC = () => {
     setItemTitle('');
   };
 
+  const deleteMilestone = (id: string) => {
+    setData((d) => removeMilestone(d, id));
+    setItemMilestone((current) => (current === id ? '' : current));
+  };
+
   const cycle = (id: string) =>
     setData((d) => ({ ...d, items: d.items.map((i) => (i.id === id ? { ...i, status: nextStatus(i.status) } : i)) }));
 
@@ -119,20 +125,41 @@ const Home: React.FC = () => {
             </IonCardHeader>
             <IonCardContent>
               <IonProgressBar aria-label={`${m.title} progress`} color={HEALTH_COLOR[m.health]} value={m.progress.ratio} />
+              <IonButton
+                aria-label={`Delete milestone ${m.title} and its items`}
+                color="danger"
+                fill="clear"
+                onClick={() => deleteMilestone(m.id)}
+                size="small"
+              >
+                Delete milestone
+              </IonButton>
               <IonList lines="none">
                 {m.items.length === 0 && <p>No items yet.</p>}
                 {m.items.map((i) => (
                   <IonItem key={i.id}>
                     <IonLabel className="ion-text-wrap">{i.title}</IonLabel>
-                    <IonChip
-                      aria-label={`${i.title}: ${i.status}. Tap to change status.`}
+                    <IonButton
+                      aria-label={`${i.title}: ${i.status}. Change status.`}
                       color={STATUS_COLOR[i.status]}
+                      fill="outline"
                       onClick={() => cycle(i.id)}
-                      role="button"
+                      size="small"
                       slot="end"
                     >
                       {i.status}
-                    </IonChip>
+                    </IonButton>
+                    <IonButton
+                      aria-label={`Delete ${i.title}`}
+                      color="medium"
+                      fill="clear"
+                      onClick={() => setData((d) => removeItem(d, i.id))}
+                      size="small"
+                      slot="end"
+                    >
+                      ✕
+                    </IonButton>
+
                   </IonItem>
                 ))}
               </IonList>
